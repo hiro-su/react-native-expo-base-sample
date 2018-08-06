@@ -1,3 +1,4 @@
+import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import {
   View,
@@ -6,10 +7,14 @@ import {
   StyleSheet,
   Platform,
   Alert,
+  Button,
 } from 'react-native';
 import Expo, { Permissions, Notifications } from 'expo';
+import _ from 'lodash';
 
-export default class HomeScreen extends Component {
+import * as masterActions from '../actions/master';
+
+class HomeScreen extends Component {
 
   constructor(props) {
     super(props);
@@ -45,17 +50,28 @@ export default class HomeScreen extends Component {
     Notifications.presentLocalNotificationAsync(localNotification);
   }
 
+  _onPressChangeState = () => {
+    const { requestProcess } = this.props;
+    requestProcess();
+  }
+
   render() {
-    const { token } = this.state;
+    const { isProcessing } = this.props;
 
     return (
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-          <Text>テスト</Text>
-          <Text>token { token }</Text>
+          <Text>test! state => {isProcessing ? 'true' : 'false'} </Text>
           {
             this.state.notifications && <Text>{JSON.stringify(this.state.notifications)}</Text>
           }
+          <Button
+            onPress={this._onPressChangeState}
+            title="change state!"
+            color="#841584"
+            accessibilityLabel="Learn more abount this purple button"
+          />
+          <Text>token { this.state.token }</Text>
         </ScrollView>
 
         <View style={styles.tabBarInfoContainer}>
@@ -104,3 +120,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   }, 
 })
+
+function mapStateToProps(state, props) {
+  const {
+    isProcessing
+  } = state.rootReducer.master;
+
+  return {
+    isProcessing,
+    master: state.rootReducer.master,
+  };
+}
+
+export default connect(
+  mapStateToProps,
+  { ..._.pickBy(masterActions, a => _.isFunction(a)) }
+)(HomeScreen);
